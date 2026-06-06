@@ -104,12 +104,19 @@ export const sendBulkEmails = async (campaignId) => {
     await campaign.save();
 
     const transporter = await getTransporter(campaign.smtpConfig);
-    const simulationMode = !transporter;
+    const useHTTP = !!(process.env.RESEND_API_KEY || process.env.SENDGRID_API_KEY);
+    const simulationMode = !transporter && !useHTTP;
 
     if (simulationMode) {
       campaign.logs.push({
         type: 'warning',
         message: 'No SMTP credentials found. Running in SIMULATION mode.'
+      });
+      await campaign.save();
+    } else if (useHTTP && !transporter) {
+      campaign.logs.push({
+        type: 'info',
+        message: `SMTP not configured or blocked. Using HTTP API mode (${process.env.RESEND_API_KEY ? 'Resend' : 'SendGrid'}) for delivery.`
       });
       await campaign.save();
     }
@@ -174,6 +181,47 @@ export const sendBulkEmails = async (campaignId) => {
             }
             // Small pause for visual realism
             await new Promise((resolve) => setTimeout(resolve, 200));
+            success = true;
+          } else if (process.env.RESEND_API_KEY && !transporter) {
+            // Send via Resend HTTP API (Port 443, never blocked)
+            const res = await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
+              },
+              body: JSON.stringify({
+                from: process.env.EMAIL_FROM || process.env.SMTP_USER || 'onboarding@resend.dev',
+                to: dbRecipient.email,
+                subject: subject,
+                html: body
+              })
+            });
+            if (!res.ok) {
+              const errData = await res.json().catch(() => ({}));
+              throw new Error(errData.message || `Resend API failed with status ${res.status}`);
+            }
+            success = true;
+          } else if (process.env.SENDGRID_API_KEY && !transporter) {
+            // Send via SendGrid HTTP API (Port 443, never blocked)
+            const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`
+              },
+              body: JSON.stringify({
+                personalizations: [{ to: [{ email: dbRecipient.email }] }],
+                from: { email: process.env.EMAIL_FROM || process.env.SMTP_USER || 'onboarding@resend.dev' },
+                subject: subject,
+                content: [{ type: 'text/html', value: body }]
+              })
+            });
+            if (!res.ok) {
+              const errData = await res.json().catch(() => ({}));
+              const errMsg = errData.errors?.[0]?.message || `SendGrid API failed with status ${res.status}`;
+              throw new Error(errMsg);
+            }
             success = true;
           } else {
             const mailOptions = {
