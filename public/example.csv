@@ -1,0 +1,8 @@
+Name,Email,Company
+John Doe,john@example.com,ABC Ltd
+Jane Smith,jane@example.com,XYZ Inc
+Robert Vance,robert.vance@vancerefrigeration.com,Vance Refrigeration
+Pam Beesly,pam@dundermifflin.com,Dunder Mifflin Paper Co
+Michael Scott,michael.scott@dundermifflin.com,Dunder Mifflin Paper Co
+Invalid Recipient,invalid-email-address,Fake Corp Inc
+Dwight Schrute,dwight@schrutefarms.com,Schrute Farms
