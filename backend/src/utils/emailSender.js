@@ -21,6 +21,9 @@ const getTransporter = async (config) => {
           user: config.auth.user,
           pass: config.auth.pass,
         },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 10000,
       });
     } else {
       return nodemailer.createTransport({
@@ -33,7 +36,10 @@ const getTransporter = async (config) => {
         },
         tls: {
           rejectUnauthorized: false
-        }
+        },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 10000,
       });
     }
   }
@@ -47,6 +53,9 @@ const getTransporter = async (config) => {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
         },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 10000,
       });
     } else {
       return nodemailer.createTransport({
@@ -59,7 +68,10 @@ const getTransporter = async (config) => {
         },
         tls: {
           rejectUnauthorized: false
-        }
+        },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 10000,
       });
     }
   }
