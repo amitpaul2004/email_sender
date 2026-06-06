@@ -103,9 +103,9 @@ export const sendBulkEmails = async (campaignId) => {
     });
     await campaign.save();
 
-    // Prioritize custom campaign SMTP config; otherwise default to HTTP API (Resend/SendGrid) if keys are present
+    // Prioritize custom campaign SMTP config; otherwise default to HTTP API (Brevo/Resend/SendGrid) if keys are present
     const hasCampaignSmtp = campaign.smtpConfig && campaign.smtpConfig.auth && campaign.smtpConfig.auth.user && campaign.smtpConfig.auth.pass;
-    const useHTTP = !hasCampaignSmtp && !!(process.env.RESEND_API_KEY || process.env.SENDGRID_API_KEY);
+    const useHTTP = !hasCampaignSmtp && !!(process.env.BREVO_API_KEY || process.env.RESEND_API_KEY || process.env.SENDGRID_API_KEY);
     const transporter = !useHTTP ? await getTransporter(campaign.smtpConfig) : null;
     const simulationMode = !transporter && !useHTTP;
 
@@ -116,9 +116,10 @@ export const sendBulkEmails = async (campaignId) => {
       });
       await campaign.save();
     } else if (useHTTP) {
+      const provider = process.env.BREVO_API_KEY ? 'Brevo' : (process.env.RESEND_API_KEY ? 'Resend' : 'SendGrid');
       campaign.logs.push({
         type: 'info',
-        message: `Using HTTP API mode (${process.env.RESEND_API_KEY ? 'Resend' : 'SendGrid'}) for delivery.`
+        message: `Using HTTP API mode (${provider}) for delivery.`
       });
       await campaign.save();
     }
@@ -183,6 +184,30 @@ export const sendBulkEmails = async (campaignId) => {
             }
             // Small pause for visual realism
             await new Promise((resolve) => setTimeout(resolve, 200));
+            success = true;
+          } else if (process.env.BREVO_API_KEY && !transporter) {
+            // Send via Brevo HTTP API (Port 443, never blocked)
+            const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+              method: 'POST',
+              headers: {
+                'accept': 'application/json',
+                'api-key': process.env.BREVO_API_KEY,
+                'content-type': 'application/json'
+              },
+              body: JSON.stringify({
+                sender: { 
+                  name: process.env.EMAIL_FROM_NAME || 'Hackathon Organizer', 
+                  email: process.env.EMAIL_FROM || process.env.SMTP_USER || 'rdxeveil@gmail.com' 
+                },
+                to: [{ email: dbRecipient.email, name: dbRecipient.name }],
+                subject: subject,
+                htmlContent: body
+              })
+            });
+            if (!res.ok) {
+              const errData = await res.json().catch(() => ({}));
+              throw new Error(errData.message || `Brevo API failed with status ${res.status}`);
+            }
             success = true;
           } else if (process.env.RESEND_API_KEY && !transporter) {
             // Send via Resend HTTP API (Port 443, never blocked)
