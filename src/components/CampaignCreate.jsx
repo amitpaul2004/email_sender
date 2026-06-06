@@ -275,7 +275,7 @@ export default function CampaignCreate() {
   const sampleSubjectPreview = getPersonalizedPreview(subject);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-gray-800 dark:text-gray-200">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 text-gray-800 dark:text-gray-200 animate-fade-in">
       {/* Header */}
       <div className="flex items-center space-x-4">
         <Link
@@ -500,6 +500,7 @@ export default function CampaignCreate() {
                 onChange={handleFileChange}
                 accept=".csv"
                 className="hidden"
+                onClick={(e) => e.stopPropagation()}
               />
             </div>
 

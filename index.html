@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="MailJet Bulk is a modern, production-ready bulk email sender web application with a rich email composer, CSV parsing, merge variables, dynamic SMTP setup, and interactive analytics reporting." />
     <title>MailJet Bulk - Modern Bulk Email Dispatcher & Analytics Dashboard</title>
+    <script>
+      (function() {
+        const theme = localStorage.getItem('theme') || 'dark';
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

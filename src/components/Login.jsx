@@ -31,7 +31,7 @@ export default function Login() {
       <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl -z-10 animate-pulse-slow"></div>
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-500/20 rounded-full blur-3xl -z-10 animate-pulse-slow"></div>
 
-      <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-900 p-8 sm:p-10 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 transition-colors duration-300">
+      <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-900 p-8 sm:p-10 rounded-2xl shadow-2xl border border-gray-100 dark:border-gray-800 transition-colors duration-300 animate-fade-in">
         <div>
           <div className="flex justify-center">
             <div className="bg-purple-600 text-white p-3 rounded-2xl shadow-lg shadow-purple-500/30">
