@@ -18,6 +18,9 @@ connectDB();
 
 const app = express();
 
+// Enable trust proxy for express-rate-limit on hosting platforms like Render
+app.set('trust proxy', 1);
+
 // Security Middlewares
 // Disable contentSecurityPolicy in helmet for development if we want to preview things easily,
 // but keep standard helmet protections.
