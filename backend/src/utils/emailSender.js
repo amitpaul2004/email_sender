@@ -103,8 +103,10 @@ export const sendBulkEmails = async (campaignId) => {
     });
     await campaign.save();
 
-    const transporter = await getTransporter(campaign.smtpConfig);
-    const useHTTP = !!(process.env.RESEND_API_KEY || process.env.SENDGRID_API_KEY);
+    // Prioritize custom campaign SMTP config; otherwise default to HTTP API (Resend/SendGrid) if keys are present
+    const hasCampaignSmtp = campaign.smtpConfig && campaign.smtpConfig.auth && campaign.smtpConfig.auth.user && campaign.smtpConfig.auth.pass;
+    const useHTTP = !hasCampaignSmtp && !!(process.env.RESEND_API_KEY || process.env.SENDGRID_API_KEY);
+    const transporter = !useHTTP ? await getTransporter(campaign.smtpConfig) : null;
     const simulationMode = !transporter && !useHTTP;
 
     if (simulationMode) {
@@ -113,10 +115,10 @@ export const sendBulkEmails = async (campaignId) => {
         message: 'No SMTP credentials found. Running in SIMULATION mode.'
       });
       await campaign.save();
-    } else if (useHTTP && !transporter) {
+    } else if (useHTTP) {
       campaign.logs.push({
         type: 'info',
-        message: `SMTP not configured or blocked. Using HTTP API mode (${process.env.RESEND_API_KEY ? 'Resend' : 'SendGrid'}) for delivery.`
+        message: `Using HTTP API mode (${process.env.RESEND_API_KEY ? 'Resend' : 'SendGrid'}) for delivery.`
       });
       await campaign.save();
     }
