@@ -20,7 +20,11 @@ export default function Register() {
       await authService.register(name, email, password);
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      if (!err.response) {
+        setError('Connection Error: Cannot reach the backend server. If you are running on a deployment link, please verify that you configured the "VITE_API_URL" environment variable in Vercel/Netlify to point to your backend Render URL (e.g. https://your-backend.onrender.com/api).');
+      } else {
+        setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
