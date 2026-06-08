@@ -1,4 +1,4 @@
-# 🚀 MailJet Bulk Email Platform
+#                                                🚀 MailJet Bulk Email Platform
 
 <p align="center">
   <img src="public/banner.png" alt="MailJet Bulk Banner" width="100%" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);" />
